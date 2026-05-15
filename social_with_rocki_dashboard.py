@@ -9,7 +9,7 @@ import streamlit as st
 
 
 st.set_page_config(
-    page_title="Social with Rocki | Private Dashboard",
+    page_title="LIVE AUTO CONTENT AGENT DASHBORAD",
     page_icon="💗",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -111,20 +111,39 @@ h2, h3 {
 }
 
 .stTabs [data-baseweb="tab-list"] {
-    background: rgba(255,45,120,0.08) !important;
-    border: 1px solid rgba(255,45,120,0.18) !important;
-    border-radius: 14px !important;
-    padding: 6px !important;
-    gap: 4px !important;
+    background: linear-gradient(135deg, rgba(255,45,120,0.1) 0%, rgba(200,255,0,0.04) 100%) !important;
+    border: 1px solid rgba(255,45,120,0.22) !important;
+    border-radius: 22px !important;
+    padding: 10px !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02) !important;
 }
 .stTabs [data-baseweb="tab"] {
-    border-radius: 10px !important;
-    color: #ff94be !important;
+    border-radius: 18px !important;
+    color: #ffb8d3 !important;
     font-weight: 700 !important;
+    min-height: 64px !important;
+    min-width: 128px !important;
+    padding: 1rem 1.35rem !important;
+    font-size: 1rem !important;
+    letter-spacing: 0.03em !important;
+    border: 1px solid rgba(255,45,120,0.16) !important;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,45,120,0.03) 100%) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease !important;
+}
+.stTabs [data-baseweb="tab"]:hover {
+    transform: translateY(-2px) !important;
+    border-color: rgba(255,121,176,0.38) !important;
+    box-shadow: 0 12px 22px rgba(255,45,120,0.12) !important;
+    background: linear-gradient(180deg, rgba(255,121,176,0.12) 0%, rgba(255,45,120,0.08) 100%) !important;
 }
 .stTabs [aria-selected="true"] {
     background: linear-gradient(135deg, #ff2d78, #ff79b0) !important;
     color: #fff !important;
+    border-color: rgba(255,255,255,0.14) !important;
+    box-shadow: 0 14px 28px rgba(255,45,120,0.26) !important;
+    transform: translateY(-2px) scale(1.01) !important;
 }
 
 .hero-card, .mini-card, .content-card, .login-shell, .login-card {
@@ -158,6 +177,18 @@ h2, h3 {
         radial-gradient(circle at top right, rgba(255,45,120,0.12), transparent 30%),
         linear-gradient(180deg, #17000f 0%, #0d0008 100%);
     padding: 28px;
+}
+.login-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1.05;
+    margin: 8px 0 10px;
+    background: linear-gradient(90deg, #ff2d78, #ff79b0, #c8ff00, #ff2d78);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 4s linear infinite;
 }
 .eyebrow {
     color: #c8ff00;
@@ -385,64 +416,26 @@ def render_login_page() -> None:
         """
         <div class="login-shell">
             <div class="login-card">
-                <div class="eyebrow">Private Access</div>
-                <h1 style="margin:8px 0 10px;">Content vault login</h1>
-                <div class="muted">
-                    Sign in to access the protected Social with Rocki dashboard.
-                    Credentials are loaded from <code>st.secrets</code> so nothing is hard-coded in the app UI.
-                </div>
+                <div class="eyebrow">Login</div>
+                <div class="login-title">LIVE AUTO CONTENT AGENT DASHBORAD</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    left_col, right_col = st.columns([1.15, 0.85], gap="large")
-
-    with left_col:
-        st.markdown("### Sign In")
+    form_col_left, form_col_center, form_col_right = st.columns([1, 1.15, 1])
+    with form_col_center:
         with st.form("login_form", clear_on_submit=False):
             username = st.text_input("Username", placeholder="Enter your username")
             password = st.text_input("Password", type="password", placeholder="Enter your password")
-            submitted = st.form_submit_button("Unlock Dashboard", use_container_width=True)
+            submitted = st.form_submit_button("Login", use_container_width=True)
 
         if submitted:
             if _check_login(username, password):
                 _sign_in(username.strip())
                 st.rerun()
             st.error("Invalid username or password.")
-
-    with right_col:
-        users = _get_auth_users()
-        st.markdown("### Demo Access")
-        st.markdown(
-            f"""
-            <div class="login-stat">
-                <div class="eyebrow">Users In Secrets</div>
-                <div class="content-title">{len(users)} demo accounts configured</div>
-                <div class="muted">
-                    The package includes 3 sample users in the secrets example file.
-                    You can replace or remove them before deployment.
-                </div>
-            </div>
-            <div class="login-stat">
-                <div class="eyebrow">Secret Keys</div>
-                <div class="muted">
-                    <code>[auth.users.rocki]</code><br>
-                    <code>[auth.users.maya]</code><br>
-                    <code>[auth.users.nina]</code>
-                </div>
-            </div>
-            <div class="login-stat">
-                <div class="eyebrow">Sheet Access</div>
-                <div class="muted">
-                    The dashboard still reads the live public Google Sheet in the background,
-                    but the link and hosting chrome are hidden from the interface.
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
 
 
 def render_sidebar(channel_columns: list[str]) -> tuple[list[str], str]:
@@ -563,11 +556,10 @@ def render_dashboard() -> None:
     st.markdown(
         f"""
         <div class="hero-card">
-            <div class="eyebrow">Protected Dashboard</div>
-            <h1 style="margin:8px 0 10px;">Private content command center</h1>
+            <div class="eyebrow">Live System</div>
+            <h1 style="margin:8px 0 10px;">LIVE AUTO CONTENT AGENT DASHBORAD</h1>
             <div class="muted">
-                The public sheet powers the content, but the interface is now gated behind a secrets-based login
-                and stripped of visible external branding, chrome, and sheet links.
+                Full live content across every category, organized into larger browsing tabs with a cleaner branded interface.
             </div>
             <div style="margin-top:12px;">
                 <span class="pill">{escape(source_label)}</span>
