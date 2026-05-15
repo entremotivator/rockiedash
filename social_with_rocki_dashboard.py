@@ -9,7 +9,7 @@ import streamlit as st
 
 
 st.set_page_config(
-    page_title="LIVE AUTO CONTENT AGENT DASHBORAD",
+    page_title="Social with RockiAI",
     page_icon="💗",
     layout="wide",
     initial_sidebar_state="expanded",
