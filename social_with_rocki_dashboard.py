@@ -77,7 +77,7 @@ h2, h3 {
     color: #0d0008 !important;
 }
 
-.stSelectbox > div > div, .stMultiSelect > div, .stTextInput > div > div > input {
+.stMultiSelect > div, .stTextInput > div > div > input {
     background: rgba(255,45,120,0.08) !important;
     border: 1px solid rgba(255,45,120,0.35) !important;
     border-radius: 10px !important;
@@ -90,7 +90,7 @@ h2, h3 {
     overflow: hidden !important;
 }
 
-.hero-card, .glass-card, .post-type-card {
+.hero-card, .post-type-card {
     border-radius: 16px;
     border: 1px solid rgba(255,45,120,0.25);
 }
@@ -98,10 +98,6 @@ h2, h3 {
     background: linear-gradient(135deg, rgba(255,45,120,0.18) 0%, rgba(200,255,0,0.05) 100%);
     padding: 24px 28px;
     margin-bottom: 18px;
-}
-.glass-card {
-    background: rgba(255,45,120,0.06);
-    padding: 18px 20px;
 }
 .post-type-card {
     background: linear-gradient(135deg, rgba(255,45,120,0.09) 0%, rgba(20,0,15,0.95) 100%);
@@ -138,39 +134,31 @@ DEFAULT_GSHEET_URL = (
     "13p7C3RIhUZ0yfIcRFbSbfI6YY-P8Lmyn1AWbbQ9K9I8/edit?gid=1657643948#gid=1657643948"
 )
 
-DEFAULT_POST_TYPES = [
-    "Carousel",
-    "Reel",
-    "Story",
-    "Static Post",
-    "Thread",
+CHANNEL_COLUMNS = [
+    "Blog",
     "Newsletter",
-    "Blog Post",
     "Podcast",
-    "Short Video",
-    "Long Video",
+    "Pinterest",
+    "Facebook",
+    "X",
+    "Linkedin",
+    "Tiktok",
+    "IG",
+    "youtube",
 ]
 
-DISPLAY_PRIORITY = [
-    "Title",
-    "Platform",
-    "Post Type",
-    "Status",
-    "Publish Date",
-    "Caption",
-    "Notes",
-    "Tags",
-]
-
-ALIASES = {
-    "title": ["title", "post title", "name", "topic"],
-    "platform": ["platform", "channel", "network"],
-    "post_type": ["post type", "content type", "type", "format"],
-    "status": ["status", "stage"],
-    "publish_date": ["publish date", "date", "scheduled date", "publish"],
-    "caption": ["caption", "copy", "description", "post copy"],
-    "notes": ["notes", "idea", "brief"],
-    "tags": ["tags", "hashtags", "keywords"],
+COLUMN_ALIASES = {
+    "trend": ["trend", "topic", "idea", "prompt"],
+    "Blog": ["blog"],
+    "Newsletter": ["newsletter"],
+    "Podcast": ["podcast"],
+    "Pinterest": ["pinterest"],
+    "Facebook": ["facebook"],
+    "X": ["x", "twitter"],
+    "Linkedin": ["linkedin"],
+    "Tiktok": ["tiktok", "tik tok", "tik-tok"],
+    "IG": ["ig", "instagram"],
+    "youtube": ["youtube", "you tube"],
 }
 
 
@@ -178,8 +166,8 @@ def _normalize_header(value: str) -> str:
     return " ".join(str(value).strip().lower().replace("_", " ").split())
 
 
-def _find_column(df: pd.DataFrame, key: str) -> Optional[str]:
-    wanted = {_normalize_header(alias) for alias in ALIASES[key]}
+def _find_alias_column(df: pd.DataFrame, aliases: list[str]) -> Optional[str]:
+    wanted = {_normalize_header(alias) for alias in aliases}
     for col in df.columns:
         if _normalize_header(col) in wanted:
             return col
@@ -221,62 +209,30 @@ def normalize_sheet(df: pd.DataFrame) -> pd.DataFrame:
     data = df.copy()
     data.columns = [str(col).strip() for col in data.columns]
 
-    mapped = {}
-    for key in ALIASES:
-        mapped[key] = _find_column(data, key)
-
     normalized = pd.DataFrame()
-    normalized["Title"] = data[mapped["title"]] if mapped["title"] else ""
-    normalized["Platform"] = data[mapped["platform"]] if mapped["platform"] else "Unknown"
-    normalized["Post Type"] = data[mapped["post_type"]] if mapped["post_type"] else "Uncategorized"
-    normalized["Status"] = data[mapped["status"]] if mapped["status"] else "Live"
-    normalized["Publish Date"] = data[mapped["publish_date"]] if mapped["publish_date"] else ""
-    normalized["Caption"] = data[mapped["caption"]] if mapped["caption"] else ""
-    normalized["Notes"] = data[mapped["notes"]] if mapped["notes"] else ""
-    normalized["Tags"] = data[mapped["tags"]] if mapped["tags"] else ""
+    trend_col = _find_alias_column(data, COLUMN_ALIASES["trend"])
+    normalized["trend"] = data[trend_col] if trend_col else ""
 
-    normalized = normalized.fillna("")
-    normalized["Title"] = normalized["Title"].astype(str).replace("", "Untitled")
-    normalized["Platform"] = normalized["Platform"].astype(str).replace("", "Unknown")
-    normalized["Post Type"] = normalized["Post Type"].astype(str).replace("", "Uncategorized")
-    normalized["Status"] = normalized["Status"].astype(str).replace("", "Live")
+    for column in CHANNEL_COLUMNS:
+        source_col = _find_alias_column(data, COLUMN_ALIASES[column])
+        normalized[column] = data[source_col] if source_col else ""
 
-    if normalized["Publish Date"].astype(str).str.strip().any():
-        normalized["_publish_sort"] = pd.to_datetime(normalized["Publish Date"], errors="coerce")
-    else:
-        normalized["_publish_sort"] = pd.NaT
-
-    normalized["_row_order"] = range(len(normalized))
-    normalized = normalized.sort_values(
-        by=["_publish_sort", "_row_order"],
-        ascending=[False, False],
-        na_position="last",
-    )
+    normalized = normalized.fillna("").astype(str)
+    normalized.insert(0, "Row", range(1, len(normalized) + 1))
     return normalized.reset_index(drop=True)
 
 
-def available_post_types(df: pd.DataFrame) -> list[str]:
-    live_types = [
-        str(value).strip()
-        for value in df.get("Post Type", pd.Series(dtype=str)).dropna().unique().tolist()
-        if str(value).strip()
-    ]
-    chosen = live_types[:10]
-    if len(chosen) < 10:
-        for fallback in DEFAULT_POST_TYPES:
-            if fallback not in chosen:
-                chosen.append(fallback)
-            if len(chosen) == 10:
-                break
-    return chosen
+def count_filled_cells(df: pd.DataFrame, columns: list[str]) -> int:
+    if not columns:
+        return 0
+    return int(df[columns].apply(lambda col: col.astype(str).str.strip().ne("")).sum().sum())
 
 
 def render_sidebar(
     data_source: str,
     sheet_url: str,
-    post_types: list[str],
-    platforms: list[str],
-) -> tuple[list[str], list[str], str]:
+    channel_columns: list[str],
+) -> tuple[list[str], str]:
     with st.sidebar:
         st.markdown(
             """
@@ -304,38 +260,29 @@ def render_sidebar(
             st.rerun()
 
         st.markdown("---")
-        platform_filter = st.multiselect(
-            "Platform",
-            options=platforms,
-            default=platforms,
+        selected_columns = st.multiselect(
+            "Live Columns",
+            options=channel_columns,
+            default=channel_columns,
         )
-        post_type_filter = st.multiselect(
-            "Post Type",
-            options=post_types,
-            default=post_types,
-        )
-        search = st.text_input("Search title", placeholder="Search a post title...")
-        return platform_filter, post_type_filter, search
+        search = st.text_input("Search trend or content", placeholder="Search across live sheet...")
+        return selected_columns, search
 
 
-def render_post_type_cards(df: pd.DataFrame, selected_types: list[str]) -> None:
-    st.markdown("### Top 10 Post Types")
-    counts = (
-        df[df["Post Type"].isin(selected_types)]["Post Type"]
-        .value_counts()
-        .reindex(selected_types, fill_value=0)
-    )
+def render_channel_cards(df: pd.DataFrame, selected_columns: list[str]) -> None:
+    st.markdown("### Live Column Counts")
     cols = st.columns(2)
-    for index, (post_type, count) in enumerate(counts.items()):
+    for index, column in enumerate(selected_columns):
+        count = int(df[column].astype(str).str.strip().ne("").sum())
         with cols[index % 2]:
             st.markdown(
                 f"""
                 <div class="post-type-card">
-                    <div class="eyebrow">Post Type</div>
+                    <div class="eyebrow">Live Column</div>
                     <div style="font-size:1.05rem; font-weight:700; color:#fff; margin:6px 0 4px;">
-                        {post_type}
+                        {column}
                     </div>
-                    <div class="muted">{count} live post{'s' if count != 1 else ''}</div>
+                    <div class="muted">{count} filled cell{'s' if count != 1 else ''}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -352,24 +299,15 @@ except Exception as exc:
     st.stop()
 
 post_df = normalize_sheet(raw_df)
-post_types = available_post_types(post_df)
-platform_options = sorted(post_df["Platform"].dropna().astype(str).unique().tolist())
-platforms, selected_types, query = render_sidebar(
-    source_label,
-    sheet_url,
-    post_types,
-    platform_options,
-)
+selected_columns, query = render_sidebar(source_label, sheet_url, CHANNEL_COLUMNS)
 
 filtered_df = post_df.copy()
-if platforms:
-    filtered_df = filtered_df[filtered_df["Platform"].isin(platforms)]
-if selected_types:
-    filtered_df = filtered_df[filtered_df["Post Type"].isin(selected_types)]
 if query.strip():
-    filtered_df = filtered_df[
-        filtered_df["Title"].str.contains(query.strip(), case=False, na=False)
-    ]
+    searchable_columns = ["trend"] + selected_columns
+    search_mask = filtered_df[searchable_columns].apply(
+        lambda col: col.astype(str).str.contains(query.strip(), case=False, na=False)
+    )
+    filtered_df = filtered_df[search_mask.any(axis=1)]
 
 filtered_df = filtered_df.reset_index(drop=True)
 last_sync = datetime.now().strftime("%b %d, %Y %I:%M %p")
@@ -380,13 +318,13 @@ st.markdown(
         <div class="eyebrow">Live Content Dashboard</div>
         <h1 style="margin:6px 0 8px;">Google Sheets, simplified.</h1>
         <div class="muted">
-            This version only shows live sheet data, keeps the original Rocki theme,
-            and focuses on 10 post types for a cleaner content view.
+            This version uses the exact live sheet columns you shared:
+            Blog, Newsletter, Podcast, Pinterest, Facebook, X, Linkedin, Tiktok, IG, youtube, and trend.
         </div>
         <div style="margin-top:12px;">
             <span class="pill">{source_label}</span>
             <span class="pill">Synced {last_sync}</span>
-            <span class="pill">{len(filtered_df)} visible posts</span>
+            <span class="pill">{len(filtered_df)} visible rows</span>
         </div>
     </div>
     """,
@@ -394,15 +332,15 @@ st.markdown(
 )
 
 metric_1, metric_2, metric_3, metric_4 = st.columns(4)
-metric_1.metric("Total Posts", len(post_df))
-metric_2.metric("Visible Posts", len(filtered_df))
-metric_3.metric("Platforms", post_df["Platform"].nunique())
-metric_4.metric("Post Types", len(post_types))
+metric_1.metric("Total Rows", len(post_df))
+metric_2.metric("Visible Rows", len(filtered_df))
+metric_3.metric("Live Columns", len(CHANNEL_COLUMNS))
+metric_4.metric("Filled Cells", count_filled_cells(post_df, selected_columns))
 
 left_col, right_col = st.columns([1.4, 1])
 with left_col:
     st.markdown("### Live Sheet Data")
-    display_columns = [col for col in DISPLAY_PRIORITY if col in filtered_df.columns]
+    display_columns = ["Row", "trend"] + selected_columns
     st.dataframe(
         filtered_df[display_columns],
         use_container_width=True,
@@ -410,14 +348,14 @@ with left_col:
     )
 
 with right_col:
-    render_post_type_cards(post_df, post_types)
+    render_channel_cards(post_df, selected_columns)
 
-st.markdown("### Current Filters")
-if selected_types:
+st.markdown("### Active Columns")
+if selected_columns:
     st.markdown(
-        "".join(f"<span class='pill'>{post_type}</span>" for post_type in selected_types),
+        "".join(f"<span class='pill'>{column}</span>" for column in selected_columns),
         unsafe_allow_html=True,
     )
 else:
-    st.info("Select at least one post type to show rows.")
+    st.info("Select at least one live column to show data.")
 
