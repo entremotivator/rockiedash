@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from typing import Optional
 from urllib.parse import parse_qs, urlparse
@@ -208,49 +207,14 @@ def _get_sheet_url() -> str:
         return DEFAULT_GSHEET_URL
 
 
-def _get_service_account() -> Optional[dict]:
-    try:
-        return dict(st.secrets["gcp_service_account"])
-    except Exception:
-        return None
-
-
 @st.cache_data(ttl=120, show_spinner=False)
 def _load_public_sheet(sheet_url: str) -> pd.DataFrame:
     return pd.read_csv(_public_csv_url(sheet_url))
 
 
-@st.cache_data(ttl=120, show_spinner=False)
-def _load_private_sheet(sheet_url: str, creds_json: str) -> pd.DataFrame:
-    import gspread
-    from google.oauth2.service_account import Credentials
-
-    scopes = [
-        "https://spreadsheets.google.com/feeds",
-        "https://www.googleapis.com/auth/drive",
-    ]
-    creds = Credentials.from_service_account_info(json.loads(creds_json), scopes=scopes)
-    client = gspread.authorize(creds)
-    workbook = client.open_by_url(sheet_url)
-    try:
-        worksheet_name = st.secrets["gsheets"]["worksheet"]
-    except Exception:
-        worksheet_name = None
-    worksheet = workbook.worksheet(worksheet_name) if worksheet_name else workbook.sheet1
-    return pd.DataFrame(worksheet.get_all_records())
-
-
 def load_live_sheet(sheet_url: str) -> tuple[pd.DataFrame, str]:
-    creds = _get_service_account()
-    if creds:
-        try:
-            df = _load_private_sheet(sheet_url, json.dumps(creds))
-            return df, "Google service account"
-        except Exception as exc:
-            st.warning(f"Private sheet login failed, trying public CSV instead: {exc}")
-
     df = _load_public_sheet(sheet_url)
-    return df, "Public CSV feed"
+    return df, "Public Google Sheet"
 
 
 def normalize_sheet(df: pd.DataFrame) -> pd.DataFrame:
@@ -456,3 +420,4 @@ if selected_types:
     )
 else:
     st.info("Select at least one post type to show rows.")
+
