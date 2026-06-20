@@ -17,7 +17,7 @@ except Exception:
 
 
 st.set_page_config(
-    page_title="Brand For The Customer",
+    page_title="Social with Rocki AI",
     page_icon="💗",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -83,7 +83,7 @@ PLATFORM_ICONS = {
 
 PAGES = [
     "Dashboard",
-    "Customer Brand",
+    "Social with Rocki AI",
     "Analytics",
     "Trend Finder",
     "Content Library",
@@ -256,6 +256,13 @@ h3{color:var(--pink)!important}
 .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:12px 0 20px}
 .platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:12px 0 20px}
 .action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:12px 0 18px}
+.latest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px;margin:12px 0 22px}
+.latest-card{background:rgba(255,255,255,.82);border:1px solid rgba(225,29,116,.16);border-radius:26px;padding:18px 18px 16px;box-shadow:var(--shadow);min-height:270px}
+.latest-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.latest-platform{font-weight:900;color:#24151f;font-size:1.02rem;line-height:1.25}
+.latest-meta{font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#a41454}
+.latest-copy{color:#3d2333;line-height:1.68;font-size:.88rem;white-space:pre-wrap;word-break:break-word;max-height:210px;overflow:auto;border-left:3px solid rgba(225,29,116,.26);padding-left:12px;margin:10px 0 12px}
+.latest-hero{background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,232,243,.68));border:1px solid rgba(225,29,116,.14);border-radius:28px;padding:22px;box-shadow:var(--shadow);margin:14px 0 18px}
 .big-number{font-family:'Playfair Display',serif;font-size:2.25rem;font-weight:900;color:var(--pink);line-height:1}
 .check-list{margin:0;padding-left:1.1rem}.check-list li{margin-bottom:.55rem;color:#48283b;line-height:1.6}
 .progress-wrap{width:100%;height:10px;border-radius:999px;background:#f6d9e8;overflow:hidden;margin-top:10px}
@@ -282,7 +289,7 @@ h3{color:var(--pink)!important}
 @media(max-width:760px){
   div.block-container{padding-left:1rem!important;padding-right:1rem!important}
   .hero-card,.glass-card,.content-card{border-radius:22px;padding:20px}
-  .platform-grid,.card-grid,.action-grid{grid-template-columns:1fr}
+  .platform-grid,.card-grid,.action-grid,.latest-grid{grid-template-columns:1fr}
   [data-testid="stMetric"]{padding:14px!important}
 }
 </style>
@@ -305,7 +312,7 @@ def _init_state() -> None:
         "auth_name": None,
         "auth_role": None,
         "page": "Dashboard",
-        "customer_drafts": [],
+        "rocki_drafts": [],
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -313,8 +320,8 @@ def _init_state() -> None:
 
 
 USERS = {
-    "rocki": {"name": "Rocki", "role": "Customer Brand Admin", "password_hash": _hash_password("rocki2026")},
-    "admin": {"name": "Admin", "role": "Customer Brand Admin", "password_hash": _hash_password("rocki2026")},
+    "rocki": {"name": "Rocki", "role": "Social with Rocki AI Admin", "password_hash": _hash_password("rocki2026")},
+    "admin": {"name": "Admin", "role": "Social with Rocki AI Admin", "password_hash": _hash_password("rocki2026")},
 }
 
 
@@ -443,7 +450,7 @@ def infer_primary_topic(row: pd.Series) -> str:
         candidate = str(row.get(col, "")).strip()
         if candidate:
             return first_line(candidate)
-    return "Customer content row"
+    return "Social with Rocki AI content row"
 
 
 def infer_pillar(brand: str, topic: str) -> str:
@@ -504,9 +511,9 @@ def normalize_sheet(df: pd.DataFrame, source: Dict[str, str]) -> pd.DataFrame:
         lambda r: first_line(r.get("IG") or r.get("Tiktok") or r.get("Linkedin") or r.get("Blog") or r.get("Research Strategy")),
         axis=1,
     )
-    frame["Search Intent"] = frame.apply(lambda r: "Customer content planning and repurposing", axis=1)
+    frame["Search Intent"] = frame.apply(lambda r: "Social with Rocki AI content planning and repurposing", axis=1)
     frame["Target Audience"] = frame["Brand"].map(lambda b: BRAND_STRATEGY.get(b, BRAND_STRATEGY[source["brand"]])["audience"])
-    frame["CTA"] = frame.apply(lambda r: "Copy, repurpose, schedule, or turn into a customer offer.", axis=1)
+    frame["CTA"] = frame.apply(lambda r: "Copy, repurpose, schedule, or turn into a Rocki offer.", axis=1)
     frame["Offer"] = frame["Brand"].map(lambda b: BRAND_STRATEGY.get(b, BRAND_STRATEGY[source["brand"]])["offers"][0])
     frame["Content Pieces"] = frame[CHANNEL_COLUMNS].apply(lambda r: int(r.astype(str).str.strip().ne("").sum()), axis=1)
     frame["Total Words"] = frame[CHANNEL_COLUMNS].apply(lambda r: sum(count_words(v) for v in r), axis=1)
@@ -551,7 +558,7 @@ def load_content_streams() -> Tuple[pd.DataFrame, pd.DataFrame]:
                 "Expected Columns": ", ".join(source["expected_columns"]),
                 "Missing Expected Columns": ", ".join(missing) if missing else "None",
                 "Status": "Connected",
-                "Message": "Live customer content is available.",
+                "Message": "Live Social with Rocki AI content is available.",
             })
         except Exception as exc:
             status_rows.append({
@@ -677,10 +684,10 @@ def display_table(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
 def render_login_page() -> None:
     st.markdown("""
     <div class="login-shell"><div class="login-card">
-    <div class="eyebrow">Private Customer Content Studio</div>
-    <div class="login-title">Brand For The Customer</div>
-    <div class="muted">A mobile-first content command center for customer-facing brand assets, trend planning, repurposing, analytics, exports, and review workflows.</div>
-    <div style="margin-top:16px"><span class="pill">Live Content Feed</span><span class="pill green">Customer Brand Metrics</span><span class="pill purple">CRUD Workspace</span></div>
+    <div class="eyebrow">Private Social with Rocki AI Studio</div>
+    <div class="login-title">Social with Rocki AI</div>
+    <div class="muted">A mobile-first Social with Rocki AI studio for brand assets, trend planning, repurposing, analytics, exports, and review workflows.</div>
+    <div style="margin-top:16px"><span class="pill">Live Content Feed</span><span class="pill green">Rocki AI Metrics</span><span class="pill purple">CRUD Workspace</span></div>
     </div></div>
     """, unsafe_allow_html=True)
     left, center, right = st.columns([1, 1.1, 1])
@@ -689,7 +696,7 @@ def render_login_page() -> None:
         with st.form("login_form"):
             username = st.text_input("Username", placeholder="rocki")
             password = st.text_input("Password", type="password", placeholder="rocki2026")
-            submitted = st.form_submit_button("Open Customer Studio", use_container_width=True)
+            submitted = st.form_submit_button("Open Social with Rocki AI Studio", use_container_width=True)
         st.caption("Demo login: rocki / rocki2026")
         if submitted:
             if _check_login(username, password):
@@ -703,7 +710,7 @@ def render_hero(title: str, subtitle: str, badges: List[str]) -> None:
     badge_html = "".join(f"<span class='pill'>{escape(str(b))}</span>" for b in badges)
     st.markdown(f"""
     <div class="hero-card">
-      <div class="eyebrow">Brand For The Customer</div>
+      <div class="eyebrow">Social with Rocki AI</div>
       <h1 style="margin:8px 0 12px">{escape(title)}</h1>
       <div class="muted" style="max-width:980px">{escape(subtitle)}</div>
       <div style="margin-top:14px">{badge_html}</div>
@@ -737,7 +744,7 @@ def render_sidebar(df: pd.DataFrame):
         )
         query = st.text_input("Search content", placeholder="AI, client, student, kit, state board...")
         st.markdown("---")
-        st.caption("Live customer content feed")
+        st.caption("Live Social with Rocki AI content feed")
         if st.button("Refresh Live Content", use_container_width=True):
             st.cache_data.clear()
             st.rerun()
@@ -751,7 +758,7 @@ def render_metric_tiles(summary: Dict[str, Any]) -> None:
         [
             ("Content Rows", summary["Rows"], "Imported planning rows"),
             ("Content Assets", summary["Assets"], "Filled platform pieces"),
-            ("Brands", summary["Brands"], "Active customer brands"),
+            ("Brands", summary["Brands"], "Active Rocki content brands"),
             ("Platforms", summary["Platforms"], "Channels with content"),
             ("Pillars", summary["Pillars"], "Strategic categories"),
         ],
@@ -784,10 +791,136 @@ def render_metric_tiles(summary: Dict[str, Any]) -> None:
             col.metric(label, value, help=help_text)
 
 
+
+def render_dashboard_latest_created_cards(df: pd.DataFrame, platforms: List[str]) -> None:
+    """Show the newest content cards for both Social with Rocki AI streams on the dashboard."""
+    st.markdown("### Latest Created Content Cards")
+    st.markdown(
+        "<div class='latest-hero'><div class='eyebrow'>Dashboard Content Feed</div>"
+        "<div class='content-title'>Newest Social + Beauty cards are now visible directly on the main dashboard.</div>"
+        "<div class='muted'>Each section pulls the newest rows first, then displays every filled platform card from those rows with copy, metrics, readiness, and repurpose details.</div></div>",
+        unsafe_allow_html=True,
+    )
+
+    if df.empty:
+        st.info("No Social with Rocki AI content rows are available yet.")
+        return
+
+    row_options = ["3 newest rows", "5 newest rows", "10 newest rows", "All rows"]
+    selected = st.selectbox(
+        "How many newest rows per brand should appear on the dashboard?",
+        row_options,
+        index=1,
+        key="dashboard_latest_row_count",
+    )
+    row_limit = None if selected == "All rows" else int(selected.split()[0])
+
+    brand_sections = [
+        ("Social With Rocki", "💼 Latest Social Brand Cards", "Newest Social with Rocki AI marketing, authority, and offer content."),
+        ("Cosmetology With Rocki", "💄 Latest Beauty Brand Cards", "Newest beauty school, cosmetology, student journey, and salon-growth content."),
+    ]
+
+    for brand, section_title, section_note in brand_sections:
+        st.markdown(f"## {section_title}")
+        st.markdown(f"<div class='muted'>{safe_html(section_note)}</div>", unsafe_allow_html=True)
+        brand_df = df[df["Brand"] == brand].copy()
+        if brand_df.empty:
+            st.info(f"No latest cards found for {brand}.")
+            continue
+
+        brand_df["_source_row_num"] = pd.to_numeric(brand_df.get("Source Row", 0), errors="coerce").fillna(0).astype(int)
+        brand_df = brand_df.sort_values(["_source_row_num", "Row"], ascending=[False, False])
+        if row_limit is not None:
+            brand_df = brand_df.head(row_limit)
+        brand_df = brand_df.drop(columns=["_source_row_num"], errors="ignore")
+
+        latest_long = build_long_df(brand_df)
+        if platforms and not latest_long.empty:
+            latest_long = latest_long[latest_long["Platform Key"].isin(platforms)]
+
+        if latest_long.empty:
+            st.info(f"The newest {brand} rows do not have content for the selected platforms.")
+            continue
+
+        latest_stream_row = int(pd.to_numeric(brand_df.get("Source Row", 0), errors="coerce").fillna(0).max())
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("Newest Row", latest_stream_row)
+        c2.metric("Cards Showing", len(latest_long))
+        c3.metric("Newest Rows", len(brand_df))
+        c4.metric("Avg Score", round(float(latest_long["Opportunity Score"].mean()), 1))
+        c5.metric("Total Words", f"{int(latest_long['Words'].sum()):,}")
+
+        grouped_rows = list(brand_df.to_dict("records"))
+        for row_index, source_row in enumerate(grouped_rows):
+            row_cards = latest_long[latest_long["Row"].astype(str) == str(source_row.get("Row", ""))].copy()
+            if row_cards.empty:
+                continue
+            st.markdown(f"#### Row {safe_html(source_row.get('Source Row', ''))}: {safe_html(source_row.get('Trend', 'Latest content'))}")
+            st.markdown(
+                f"<div class='muted'>Pillar: <b>{safe_html(source_row.get('Pillar', ''))}</b> · "
+                f"Readiness: <b>{safe_html(source_row.get('Readiness', ''))}</b> · "
+                f"Repurpose Score: <b>{safe_html(source_row.get('Repurpose Score', 0))}/100</b> · "
+                f"Opportunity Score: <b>{safe_html(source_row.get('Opportunity Score', 0))}/10</b></div>",
+                unsafe_allow_html=True,
+            )
+
+            for start in range(0, len(row_cards), 2):
+                cols = st.columns(2)
+                for col, (_, card) in zip(cols, row_cards.iloc[start:start + 2].iterrows()):
+                    icon = PLATFORM_ICONS.get(str(card.get("Platform Key", "")), "✨")
+                    with col:
+                        st.markdown(f"""
+                        <div class='latest-card'>
+                          <div class='latest-card-top'>
+                            <div>
+                              <div class='latest-meta'>{safe_html(card.get('Brand', ''))} • Row {safe_html(card.get('Source Row', ''))}</div>
+                              <div class='latest-platform'>{icon} {safe_html(card.get('Platform', ''))}</div>
+                            </div>
+                            <span class='pill'>{safe_html(card.get('Readiness', ''))}</span>
+                          </div>
+                          <div class='trend-copy'><b>Hook:</b> {safe_html(card.get('Hook', ''))}<br><b>Offer:</b> {safe_html(card.get('Offer', ''))}<br><b>CTA:</b> {safe_html(card.get('CTA', ''))}</div>
+                          <div class='latest-copy'>{safe_html(card.get('Content', ''))}</div>
+                          <span class='pill purple'>{safe_html(card.get('Words', 0))} words</span>
+                          <span class='pill green'>{safe_html(card.get('Characters', 0))} chars</span>
+                          <span class='pill'>Score {safe_html(card.get('Opportunity Score', 0))}/10</span>
+                          <span class='pill gold'>Repurpose {safe_html(card.get('Repurpose Score', 0))}/100</span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        with st.expander("Open full copy editor", expanded=False):
+                            st.text_area(
+                                "Full card copy",
+                                value=str(card.get("Content", "")),
+                                height=220,
+                                key=f"dash_latest_copy_{brand}_{card.get('Row')}_{card.get('Platform Key')}_{row_index}_{start}",
+                                label_visibility="collapsed",
+                            )
+                            export_df = pd.DataFrame([card.to_dict()])
+                            st.download_button(
+                                "Download this card",
+                                data=export_df.to_csv(index=False).encode("utf-8"),
+                                file_name=f"{str(brand).lower().replace(' ', '_')}_row_{card.get('Source Row')}_{card.get('Platform Key')}.csv",
+                                mime="text/csv",
+                                use_container_width=True,
+                                key=f"dash_latest_download_{brand}_{card.get('Row')}_{card.get('Platform Key')}_{row_index}_{start}",
+                            )
+
+        st.markdown("### Latest Cards Table")
+        table_cols = ["Brand", "Source Row", "Platform", "Pillar", "Trend", "Readiness", "Words", "Characters", "CTA Signals", "Hook Signals", "Opportunity Score", "Repurpose Score"]
+        st.dataframe(
+            display_table(latest_long, table_cols),
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Trend": st.column_config.TextColumn(width="large"),
+                "Opportunity Score": st.column_config.ProgressColumn(min_value=0, max_value=10),
+                "Repurpose Score": st.column_config.ProgressColumn(min_value=0, max_value=100),
+            },
+        )
+
 def render_page_buttons() -> None:
     st.markdown("### Fast Page Buttons")
     button_rows = [
-        [("Customer Brand", "Open Customer Brand"), ("Content Library", "Open Library"), ("CRUD Studio", "Open CRUD Studio"), ("Analytics", "Open Analytics")],
+        [("Social with Rocki AI", "Open Social with Rocki AI"), ("Content Library", "Open Library"), ("CRUD Studio", "Open CRUD Studio"), ("Analytics", "Open Analytics")],
         [("Trend Finder", "Open Trend Finder"), ("Content Calendar", "Open Calendar"), ("Export Center", "Open Exports"), ("Source Health", "Open Source Health")],
     ]
     for row in button_rows:
@@ -805,13 +938,14 @@ def render_dashboard(df: pd.DataFrame, status_df: pd.DataFrame, brands: List[str
     summary = metric_summary(active, long_df)
 
     render_hero(
-        "Customer Brand Command Center",
-        "A customer-facing content dashboard with richer metrics, fast navigation, review status, export tools, repurposing insights, and a local CRUD workspace that does not alter your existing source columns.",
-        ["Brand For The Customer", "Metrics Expanded", "Mobile First", f"Updated {datetime.now().strftime('%b %d, %Y %I:%M %p')}"],
+        "Social with Rocki AI Dashboard",
+        "A Social with Rocki AI content dashboard with richer metrics, fast navigation, review status, export tools, repurposing insights, and a local CRUD workspace that does not alter your existing source columns.",
+        ["Social with Rocki AI", "Metrics Expanded", "Mobile First", f"Updated {datetime.now().strftime('%b %d, %Y %I:%M %p')}"],
     )
 
     render_page_buttons()
     render_metric_tiles(summary)
+    render_dashboard_latest_created_cards(active, platforms)
 
     left, right = st.columns([1.35, .95], gap="large")
     with left:
@@ -846,33 +980,33 @@ def render_dashboard(df: pd.DataFrame, status_df: pd.DataFrame, brands: List[str
             </div>
             """, unsafe_allow_html=True)
 
-        st.markdown("### Customer Growth Checklist")
+        st.markdown("### Rocki Growth Checklist")
         st.markdown("""
         <div class='glass-card'>
           <ul class='check-list'>
             <li>Review highest-score rows first.</li>
             <li>Turn every strong row into short-form, long-form, email, and community copy.</li>
             <li>Move unfinished ideas into the CRUD Studio for editing.</li>
-            <li>Export clean customer-ready files from Export Center.</li>
+            <li>Export clean Rocki-ready files from Export Center.</li>
             <li>Use the calendar view to create a simple weekly publishing rhythm.</li>
           </ul>
         </div>
         """, unsafe_allow_html=True)
 
 
-def render_customer_brand(df: pd.DataFrame, brands: List[str], query: str) -> None:
+def render_social_with_rocki_ai(df: pd.DataFrame, brands: List[str], query: str) -> None:
     active = filtered_rows(df, brands, query)
     long_df = build_long_df(active)
     summary = metric_summary(active, long_df)
     render_hero(
-        "Brand For The Customer",
-        "Customer-facing brand view for positioning, offers, content pillars, strongest hooks, audience promises, and ready-to-repurpose assets.",
-        ["Customer Brand View", "Offer Ladder", "Pillar Map", "Copy Ready"],
+        "Social with Rocki AI",
+        "Social with Rocki AI brand view for positioning, offers, content pillars, strongest hooks, audience promises, and ready-to-repurpose assets.",
+        ["Rocki AI Brand View", "Offer Ladder", "Pillar Map", "Copy Ready"],
     )
 
     render_metric_tiles(summary)
 
-    st.markdown("### Customer Brand Strategy Cards")
+    st.markdown("### Social with Rocki AI Strategy Cards")
     for brand in sorted(active["Brand"].unique()) if not active.empty else sorted(BRAND_STRATEGY.keys()):
         info = BRAND_STRATEGY.get(brand, {})
         brand_df = active[active["Brand"] == brand].copy() if not active.empty else pd.DataFrame()
@@ -881,10 +1015,10 @@ def render_customer_brand(df: pd.DataFrame, brands: List[str], query: str) -> No
         <div class='glass-card'>
           <div class='brand-band'></div>
           <div class='eyebrow'>{safe_html(brand)}</div>
-          <div class='content-title'>{safe_html(info.get('tagline', 'Customer brand content system'))}</div>
-          <div class='content-copy'>{safe_html(info.get('promise', 'Create trust-building customer content.'))}</div>
+          <div class='content-title'>{safe_html(info.get('tagline', 'Social with Rocki AI content system'))}</div>
+          <div class='content-copy'>{safe_html(info.get('promise', 'Create trust-building Rocki AI content.'))}</div>
           <div style='margin-top:12px'>
-            <span class='pill green'>{safe_html(info.get('audience', 'Customer audience'))}</span>
+            <span class='pill green'>{safe_html(info.get('audience', 'Rocki AI audience'))}</span>
             <span class='pill purple'>{len(brand_df)} rows</span>
             <span class='pill'>{len(brand_long)} assets</span>
           </div>
@@ -905,7 +1039,7 @@ def render_customer_brand(df: pd.DataFrame, brands: List[str], query: str) -> No
             offers = info.get("offers", [])
             st.markdown("<div class='mini-card'>" + "".join(f"<span class='pill purple'>{escape(o)}</span>" for o in offers) + "</div>", unsafe_allow_html=True)
 
-    st.markdown("### Best Customer-Facing Hooks")
+    st.markdown("### Best Rocki AI Hooks")
     if active.empty:
         st.info("No content rows match your current filters.")
     else:
@@ -980,7 +1114,7 @@ def render_analytics(df: pd.DataFrame, brands: List[str], platforms: List[str], 
 def render_trend_finder(df: pd.DataFrame) -> None:
     render_hero(
         "Trend Finder",
-        "Find customer content opportunities already present in your live content feed. Filter by brand, pillar, score, readiness, CTA strength, and repurpose potential.",
+        "Find Social with Rocki AI content opportunities already present in your live content feed. Filter by brand, pillar, score, readiness, CTA strength, and repurpose potential.",
         ["Searchable", "Exportable", "Opportunity Scored"],
     )
     if df.empty:
@@ -1009,7 +1143,7 @@ def render_trend_finder(df: pd.DataFrame) -> None:
     st.download_button(
         "Download Trend Board CSV",
         data=active.to_csv(index=False).encode("utf-8"),
-        file_name="customer_brand_trend_board.csv",
+        file_name="social_with_rocki_ai_trend_board.csv",
         mime="text/csv",
         use_container_width=True,
     )
@@ -1040,8 +1174,8 @@ def render_content_library(df: pd.DataFrame, brands: List[str], platforms: List[
         long_df = long_df[long_df["Platform Key"].isin(platforms)]
     render_hero(
         "Content Library",
-        "Copy-ready customer content library with filters, metrics, cards, planning table, and export tools.",
-        ["Copy Ready", "Customer Posts", "Filter + Export"],
+        "Copy-ready Social with Rocki AI content library with filters, metrics, cards, planning table, and export tools.",
+        ["Copy Ready", "Rocki AI Posts", "Filter + Export"],
     )
 
     if long_df.empty:
@@ -1076,7 +1210,7 @@ def render_content_library(df: pd.DataFrame, brands: List[str], platforms: List[
     st.download_button(
         "Download Active Content CSV",
         data=active[export_cols].rename(columns={"Source Sheet": "Content Stream", "Source Row": "Stream Row"}).to_csv(index=False).encode("utf-8"),
-        file_name="customer_brand_content_library.csv",
+        file_name="social_with_rocki_ai_content_library.csv",
         mime="text/csv",
         use_container_width=True,
     )
@@ -1125,7 +1259,7 @@ def render_calendar(df: pd.DataFrame, brands: List[str], query: str) -> None:
     active = filtered_rows(df, brands, query)
     render_hero(
         "Content Calendar",
-        "A customer publishing view built from active content rows. Use it to plan weekly campaigns, repurpose assets, and assign primary platforms.",
+        "A Social with Rocki AI publishing view built from active content rows. Use it to plan weekly campaigns, repurpose assets, and assign primary platforms.",
         ["Weekly Planning", "Repurpose Map", "Exportable"],
     )
     if active.empty:
@@ -1172,7 +1306,7 @@ def render_calendar(df: pd.DataFrame, brands: List[str], query: str) -> None:
     st.download_button(
         "Download Content Calendar CSV",
         data=cal.to_csv(index=False).encode("utf-8"),
-        file_name="customer_brand_content_calendar.csv",
+        file_name="social_with_rocki_ai_content_calendar.csv",
         mime="text/csv",
         use_container_width=True,
     )
@@ -1183,7 +1317,7 @@ def make_draft_id() -> str:
 
 
 def drafts_df() -> pd.DataFrame:
-    drafts = st.session_state.get("customer_drafts", [])
+    drafts = st.session_state.get("rocki_drafts", [])
     if not drafts:
         return pd.DataFrame(columns=[
             "Draft ID", "Brand", "Platform", "Pillar", "Trend", "Hook", "Content", "CTA", "Offer", "Status",
@@ -1196,14 +1330,14 @@ def render_crud_studio(df: pd.DataFrame, brands: List[str], query: str) -> None:
     active = filtered_rows(df, brands, query)
     render_hero(
         "CRUD Studio",
-        "Create, review, update, duplicate, delete, and export customer content drafts inside this dashboard session without altering your existing source columns.",
+        "Create, review, update, duplicate, delete, and export Social with Rocki AI content drafts inside this dashboard session without altering your existing source columns.",
         ["Create", "Read", "Update", "Delete", "Duplicate", "Export"],
     )
 
     tabs = st.tabs(["Create Draft", "Manage Drafts", "Import From Content Row", "Draft Metrics"])
 
     with tabs[0]:
-        st.markdown("### Create Customer Content Draft")
+        st.markdown("### Create Rocki AI Content Draft")
         with st.form("create_draft_form", clear_on_submit=True):
             c1, c2, c3 = st.columns(3)
             with c1:
@@ -1212,13 +1346,13 @@ def render_crud_studio(df: pd.DataFrame, brands: List[str], query: str) -> None:
                 status = st.selectbox("Status", STATUS_ORDER, index=1)
             with c2:
                 pillar_options = BRAND_STRATEGY.get(brand, {}).get("pillars", [])
-                pillar = st.selectbox("Pillar", pillar_options if pillar_options else ["Customer Content"])
+                pillar = st.selectbox("Pillar", pillar_options if pillar_options else ["Rocki AI Content"])
                 owner = st.text_input("Owner", value=str(st.session_state.auth_name or "Team"))
                 due_date = st.date_input("Due Date")
             with c3:
                 offer_options = BRAND_STRATEGY.get(brand, {}).get("offers", [])
-                offer = st.selectbox("Offer", offer_options if offer_options else ["Customer Offer"])
-                trend = st.text_input("Trend / Topic", placeholder="Enter customer-facing topic")
+                offer = st.selectbox("Offer", offer_options if offer_options else ["Rocki AI Offer"])
+                trend = st.text_input("Trend / Topic", placeholder="Enter Rocki AI topic")
                 hook = st.text_input("Hook", placeholder="Enter first-line hook")
             content = st.text_area("Content", height=220, placeholder="Write or paste the post, email, script, or campaign copy...")
             cta = st.text_input("CTA", placeholder="Example: Save this, comment READY, book a call, download the checklist")
@@ -1244,12 +1378,12 @@ def render_crud_studio(df: pd.DataFrame, brands: List[str], query: str) -> None:
                 "Characters": len(content),
                 "Score": min(10, 2 + min(3, count_words(content) // 70) + min(2, count_cta_terms(content) + count_cta_terms(cta)) + min(2, count_hook_terms(content) + count_hook_terms(hook)) + min(1, len(extract_hashtags(content)))),
             }
-            st.session_state.customer_drafts.append(draft)
+            st.session_state.rocki_drafts.append(draft)
             st.success("Draft created.")
 
     with tabs[1]:
         current = drafts_df()
-        st.markdown("### Manage Customer Drafts")
+        st.markdown("### Manage Rocki AI Drafts")
         if current.empty:
             st.info("No session drafts yet. Create one or import from an existing content row.")
         else:
@@ -1268,9 +1402,9 @@ def render_crud_studio(df: pd.DataFrame, brands: List[str], query: str) -> None:
             st.dataframe(filtered, use_container_width=True, hide_index=True)
 
             selected_id = st.selectbox("Select draft to edit", filtered["Draft ID"].tolist() if not filtered.empty else current["Draft ID"].tolist())
-            draft_index = next((i for i, item in enumerate(st.session_state.customer_drafts) if item["Draft ID"] == selected_id), None)
+            draft_index = next((i for i, item in enumerate(st.session_state.rocki_drafts) if item["Draft ID"] == selected_id), None)
             if draft_index is not None:
-                draft = st.session_state.customer_drafts[draft_index]
+                draft = st.session_state.rocki_drafts[draft_index]
                 with st.form("update_draft_form"):
                     c1, c2, c3 = st.columns(3)
                     with c1:
@@ -1279,14 +1413,14 @@ def render_crud_studio(df: pd.DataFrame, brands: List[str], query: str) -> None:
                         new_status = st.selectbox("Edit Status", STATUS_ORDER, index=STATUS_ORDER.index(draft["Status"]) if draft["Status"] in STATUS_ORDER else 1)
                     with c2:
                         pillar_options = BRAND_STRATEGY.get(new_brand, {}).get("pillars", [])
-                        new_pillar = st.selectbox("Edit Pillar", pillar_options if pillar_options else [draft.get("Pillar", "Customer Content")], index=0)
+                        new_pillar = st.selectbox("Edit Pillar", pillar_options if pillar_options else [draft.get("Pillar", "Rocki AI Content")], index=0)
                         new_owner = st.text_input("Edit Owner", value=draft.get("Owner", "Team"))
                         new_due_date = st.text_input("Edit Due Date", value=str(draft.get("Due Date", "")))
                     with c3:
                         offer_options = BRAND_STRATEGY.get(new_brand, {}).get("offers", [])
                         existing_offer = draft.get("Offer", "")
                         offer_index = offer_options.index(existing_offer) if existing_offer in offer_options else 0
-                        new_offer = st.selectbox("Edit Offer", offer_options if offer_options else [existing_offer or "Customer Offer"], index=offer_index)
+                        new_offer = st.selectbox("Edit Offer", offer_options if offer_options else [existing_offer or "Rocki AI Offer"], index=offer_index)
                         new_trend = st.text_input("Edit Trend / Topic", value=draft.get("Trend", ""))
                         new_hook = st.text_input("Edit Hook", value=draft.get("Hook", ""))
                     new_content = st.text_area("Edit Content", value=draft.get("Content", ""), height=260)
@@ -1294,7 +1428,7 @@ def render_crud_studio(df: pd.DataFrame, brands: List[str], query: str) -> None:
                     update_btn = st.form_submit_button("Update Draft", use_container_width=True)
                 if update_btn:
                     now = datetime.now().strftime("%Y-%m-%d %I:%M %p")
-                    st.session_state.customer_drafts[draft_index].update({
+                    st.session_state.rocki_drafts[draft_index].update({
                         "Brand": new_brand,
                         "Platform": new_platform,
                         "Pillar": new_pillar,
@@ -1321,11 +1455,11 @@ def render_crud_studio(df: pd.DataFrame, brands: List[str], query: str) -> None:
                     new_draft["Trend"] = f"{new_draft.get('Trend', '')} Copy".strip()
                     new_draft["Created"] = datetime.now().strftime("%Y-%m-%d %I:%M %p")
                     new_draft["Updated"] = new_draft["Created"]
-                    st.session_state.customer_drafts.append(new_draft)
+                    st.session_state.rocki_drafts.append(new_draft)
                     st.success("Draft duplicated.")
                     st.rerun()
                 if d2.button("Delete Selected Draft", use_container_width=True):
-                    st.session_state.customer_drafts = [item for item in st.session_state.customer_drafts if item["Draft ID"] != selected_id]
+                    st.session_state.rocki_drafts = [item for item in st.session_state.rocki_drafts if item["Draft ID"] != selected_id]
                     st.success("Draft deleted.")
                     st.rerun()
 
@@ -1333,7 +1467,7 @@ def render_crud_studio(df: pd.DataFrame, brands: List[str], query: str) -> None:
             st.download_button(
                 "Download Session Drafts CSV",
                 data=export.to_csv(index=False).encode("utf-8"),
-                file_name="customer_brand_session_drafts.csv",
+                file_name="social_with_rocki_ai_session_drafts.csv",
                 mime="text/csv",
                 use_container_width=True,
             )
@@ -1373,7 +1507,7 @@ def render_crud_studio(df: pd.DataFrame, brands: List[str], query: str) -> None:
                         "Characters": len(content),
                         "Score": int(row.get("Opportunity Score", 0) or 0),
                     }
-                    st.session_state.customer_drafts.append(draft)
+                    st.session_state.rocki_drafts.append(draft)
                     st.success("Content imported into drafts.")
 
     with tabs[3]:
@@ -1402,8 +1536,8 @@ def render_export_center(df: pd.DataFrame, brands: List[str], platforms: List[st
 
     render_hero(
         "Export Center",
-        "Download customer-ready files for full rows, platform content, calendar planning, trend boards, and session drafts.",
-        ["CSV Exports", "Customer Ready", "No Column Changes"],
+        "Download Rocki-ready files for full rows, platform content, calendar planning, trend boards, and session drafts.",
+        ["CSV Exports", "Rocki AI Ready", "No Column Changes"],
     )
 
     if active_rows.empty:
@@ -1434,14 +1568,14 @@ def render_export_center(df: pd.DataFrame, brands: List[str], platforms: List[st
     c1, c2 = st.columns(2)
     with c1:
         st.markdown("### Main Exports")
-        st.download_button("Download Full Content Rows", data=full_export.to_csv(index=False).encode("utf-8"), file_name="customer_brand_full_rows.csv", mime="text/csv", use_container_width=True)
-        st.download_button("Download Platform Content Library", data=library_export.to_csv(index=False).encode("utf-8"), file_name="customer_brand_platform_library.csv", mime="text/csv", use_container_width=True)
-        st.download_button("Download Calendar Planner", data=calendar_export.to_csv(index=False).encode("utf-8"), file_name="customer_brand_calendar_planner.csv", mime="text/csv", use_container_width=True)
+        st.download_button("Download Full Content Rows", data=full_export.to_csv(index=False).encode("utf-8"), file_name="social_with_rocki_ai_full_rows.csv", mime="text/csv", use_container_width=True)
+        st.download_button("Download Platform Content Library", data=library_export.to_csv(index=False).encode("utf-8"), file_name="social_with_rocki_ai_platform_library.csv", mime="text/csv", use_container_width=True)
+        st.download_button("Download Calendar Planner", data=calendar_export.to_csv(index=False).encode("utf-8"), file_name="social_with_rocki_ai_calendar_planner.csv", mime="text/csv", use_container_width=True)
     with c2:
         st.markdown("### Planning Exports")
-        st.download_button("Download Trend Board", data=trend_export.to_csv(index=False).encode("utf-8"), file_name="customer_brand_trend_board.csv", mime="text/csv", use_container_width=True)
-        st.download_button("Download Session Drafts", data=draft_export.to_csv(index=False).encode("utf-8"), file_name="customer_brand_session_drafts.csv", mime="text/csv", use_container_width=True)
-        st.download_button("Download Column Template", data=pd.DataFrame(columns=CHANNEL_COLUMNS).to_csv(index=False).encode("utf-8"), file_name="customer_brand_column_template.csv", mime="text/csv", use_container_width=True)
+        st.download_button("Download Trend Board", data=trend_export.to_csv(index=False).encode("utf-8"), file_name="social_with_rocki_ai_trend_board.csv", mime="text/csv", use_container_width=True)
+        st.download_button("Download Session Drafts", data=draft_export.to_csv(index=False).encode("utf-8"), file_name="social_with_rocki_ai_session_drafts.csv", mime="text/csv", use_container_width=True)
+        st.download_button("Download Column Template", data=pd.DataFrame(columns=CHANNEL_COLUMNS).to_csv(index=False).encode("utf-8"), file_name="social_with_rocki_ai_column_template.csv", mime="text/csv", use_container_width=True)
 
     st.markdown("### Export Preview")
     st.dataframe(trend_export, use_container_width=True, hide_index=True)
@@ -1450,7 +1584,7 @@ def render_export_center(df: pd.DataFrame, brands: List[str], platforms: List[st
 def render_source_health(status_df: pd.DataFrame) -> None:
     render_hero(
         "Source Health",
-        "Connection and column health for the two live customer content streams. This page keeps the source setup readable without changing any columns.",
+        "Connection and column health for the two live Social with Rocki AI content streams. This page keeps the source setup readable without changing any columns.",
         ["Connection Check", "Column Check", "Read Only"],
     )
     st.markdown("### Connected Content Streams")
@@ -1483,8 +1617,8 @@ def render_app() -> None:
 
     if page == "Dashboard":
         render_dashboard(df, status_df, brands, platforms, query)
-    elif page == "Customer Brand":
-        render_customer_brand(df, brands, query)
+    elif page == "Social with Rocki AI":
+        render_social_with_rocki_ai(df, brands, query)
     elif page == "Analytics":
         render_analytics(df, brands, platforms, query)
     elif page == "Trend Finder":
@@ -1506,4 +1640,3 @@ if not st.session_state.auth_ok:
     render_login_page()
 else:
     render_app()
-
