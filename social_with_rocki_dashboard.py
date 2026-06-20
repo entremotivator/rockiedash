@@ -1506,3 +1506,4 @@ if not st.session_state.auth_ok:
     render_login_page()
 else:
     render_app()
+
